@@ -1,0 +1,10 @@
+[tools]
+go = "1.26"
+
+[tasks.build]
+description = "Build the nocodb-migrate binary"
+run = "go build -o nocodb-migrate ."
+
+[tasks.test]
+description = "Run all tests"
+run = "go test ./..."
