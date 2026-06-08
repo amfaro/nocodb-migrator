@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/memclutter/nocodb-migrator/cmd"
+	"github.com/amfaro/nocodb-migrator/cmd"
 	"github.com/spf13/cobra"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/memclutter/nocodb-migrator/internal/api"
+	"github.com/amfaro/nocodb-migrator/internal/api"
 )
 
 func initClient() (*api.Client, error) {

@@ -1,4 +1,4 @@
-module github.com/memclutter/nocodb-migrator
+module github.com/amfaro/nocodb-migrator
 
 go 1.21
 

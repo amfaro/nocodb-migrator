@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/memclutter/nocodb-migrator/internal/api"
+	"github.com/amfaro/nocodb-migrator/internal/api"
 )
 
 // MigrationsStorage manages the migrations table in NocoDB

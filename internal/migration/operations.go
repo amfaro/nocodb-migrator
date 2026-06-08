@@ -3,7 +3,7 @@ package migration
 import (
 	"fmt"
 
-	"github.com/memclutter/nocodb-migrator/internal/api"
+	"github.com/amfaro/nocodb-migrator/internal/api"
 )
 
 // Executor executes migration operations
