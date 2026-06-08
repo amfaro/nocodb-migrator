@@ -119,6 +119,15 @@ func TestValidateMigration(t *testing.T) {
 			},
 			wantError: true,
 		},
+		{
+			name: "alter_field with order",
+			migration: &Migration{
+				Operations: []Operation{
+					{Type: "alter_field", Table: "T", Column: &ColumnDefinition{Name: "c", Type: "Number", Order: func() *int { v := 3; return &v }()}},
+				},
+			},
+			wantError: false,
+		},
 	}
 
 	for _, tt := range tests {

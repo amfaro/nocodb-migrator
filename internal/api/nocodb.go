@@ -92,6 +92,7 @@ type FieldUpdate struct {
 	Unique       *bool                  `json:"unique,omitempty"`
 	Description  string                 `json:"description,omitempty"`
 	Options      map[string]interface{} `json:"options,omitempty"`
+	Order        *int                   `json:"order,omitempty"`
 }
 
 // Record represents a record in a table

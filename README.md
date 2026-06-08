@@ -284,6 +284,19 @@ Or by field name:
 }
 ```
 
+Reordering an existing field:
+
+```json
+{
+  "type": "alter_field",
+  "table": "Products",
+  "column": {
+    "name": "Description",
+    "order": 5
+  }
+}
+```
+
 #### Deleting a Field
 
 ```json
