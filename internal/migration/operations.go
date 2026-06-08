@@ -198,6 +198,9 @@ func (e *Executor) alterField(op *Operation) error {
 		if op.Column.Options != nil {
 			req.Options = op.Column.Options
 		}
+		if op.Column.Order != nil {
+			req.Order = op.Column.Order
+		}
 		req.Required = &op.Column.Required
 		req.Unique = &op.Column.Unique
 	}
