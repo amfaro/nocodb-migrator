@@ -80,6 +80,7 @@ type FieldCreate struct {
 	Unique       bool                   `json:"unique,omitempty"`
 	Description  string                 `json:"description,omitempty"`
 	Options      map[string]interface{} `json:"options,omitempty"`
+	Order        *int                   `json:"order,omitempty"`
 }
 
 // FieldUpdate represents a field update request
