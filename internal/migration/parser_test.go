@@ -27,7 +27,8 @@ func TestParseMigration(t *testing.T) {
         {
           "name": "Name",
           "type": "SingleLineText",
-          "required": true
+          "required": true,
+          "order": 2
         }
       ]
     }
@@ -61,14 +62,17 @@ func TestParseMigration(t *testing.T) {
 	if len(op.Columns) != 2 {
 		t.Errorf("Expected 2 columns, got %d", len(op.Columns))
 	}
+	if op.Columns[1].Order == nil || *op.Columns[1].Order != 2 {
+		t.Errorf("Expected second column order 2, got %v", op.Columns[1].Order)
+	}
 }
 
 func TestValidateMigration(t *testing.T) {
 	tests := []struct {
 		name      string
-		migration  *Migration
-		wantError  bool
-		errorMsg   string
+		migration *Migration
+		wantError bool
+		errorMsg  string
 	}{
 		{
 			name: "valid migration",

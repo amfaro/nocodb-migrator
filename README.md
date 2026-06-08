@@ -241,6 +241,21 @@ The following data types are supported:
 }
 ```
 
+With explicit NocoDB display order:
+
+```json
+{
+  "type": "create_field",
+  "table": "Products",
+  "column": {
+    "name": "SKU",
+    "type": "SingleLineText",
+    "required": true,
+    "order": 3
+  }
+}
+```
+
 #### Modifying a Field
 
 ```json

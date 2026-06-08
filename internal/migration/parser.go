@@ -32,6 +32,7 @@ type ColumnDefinition struct {
 	DefaultValue interface{}            `json:"default_value,omitempty"`
 	Description  string                 `json:"description,omitempty"`
 	Options      map[string]interface{} `json:"options,omitempty"`
+	Order        *int                   `json:"order,omitempty"`
 }
 
 // ValidOperationTypes is a list of valid operation types

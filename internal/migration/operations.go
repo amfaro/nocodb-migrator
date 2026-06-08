@@ -55,6 +55,7 @@ func (e *Executor) createTable(op *Operation) error {
 			Unique:       col.Unique,
 			Description:  col.Description,
 			Options:      col.Options,
+			Order:        col.Order,
 		}
 	}
 
@@ -148,6 +149,7 @@ func (e *Executor) createField(op *Operation) error {
 		Unique:       op.Column.Unique,
 		Description:  op.Column.Description,
 		Options:      options,
+		Order:        op.Column.Order,
 	}
 
 	_, err = e.client.CreateField(table.ID, req)
