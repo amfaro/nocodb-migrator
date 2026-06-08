@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/memclutter/nocodb-migrator/internal/storage"
+	"github.com/amfaro/nocodb-migrator/internal/storage"
 	"github.com/spf13/cobra"
 )
 
