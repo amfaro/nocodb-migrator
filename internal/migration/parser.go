@@ -37,14 +37,15 @@ type ColumnDefinition struct {
 
 // ValidOperationTypes is a list of valid operation types
 var ValidOperationTypes = map[string]bool{
-	"create_table": true,
-	"alter_table":  true,
-	"drop_table":   true,
-	"create_field": true,
-	"alter_field":  true,
-	"drop_field":   true,
-	"insert_row":   true,
-	"delete_row":   true,
+	"create_table":      true,
+	"alter_table":       true,
+	"drop_table":        true,
+	"create_field":      true,
+	"alter_field":       true,
+	"drop_field":        true,
+	"set_display_field": true,
+	"insert_row":        true,
+	"delete_row":        true,
 }
 
 // ParseMigration parses a migration JSON file
@@ -157,6 +158,14 @@ func ValidateOperation(op *Operation) error {
 		}
 		if op.RecordID == "" && (op.Where == nil || len(op.Where) == 0) {
 			return fmt.Errorf("delete_row operation requires either 'record_id' or 'where' field")
+		}
+
+	case "set_display_field":
+		if op.Table == "" {
+			return fmt.Errorf("set_display_field operation requires 'table' field")
+		}
+		if op.FieldID == "" && (op.Column == nil || op.Column.Name == "") {
+			return fmt.Errorf("set_display_field operation requires either 'field_id' or 'column.name' field")
 		}
 	}
 

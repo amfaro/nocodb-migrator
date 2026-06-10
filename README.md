@@ -87,8 +87,9 @@ Migrations are JSON files with an array of operations.
 4. **create_field** - create a field
 5. **alter_field** - modify a field
 6. **drop_field** - delete a field
-7. **insert_row** - insert data
-8. **delete_row** - delete data
+7. **set_display_field** - set a field as the table's display/primary field
+8. **insert_row** - insert data
+9. **delete_row** - delete data
 
 ### Example Migration (up.json)
 
@@ -334,6 +335,32 @@ Or by name:
 }
 ```
 
+#### Setting a Display Field
+
+Set a field as the table's display/primary field. In NocoDB, the display field is the sticky column shown on the far left of the grid view and is used as the label for linked records.
+
+By field ID:
+
+```json
+{
+  "type": "set_display_field",
+  "table": "Products",
+  "field_id": "field_id_here"
+}
+```
+
+Or by field name:
+
+```json
+{
+  "type": "set_display_field",
+  "table": "Products",
+  "column": {
+    "name": "Title"
+  }
+}
+```
+
 #### Deleting Data
 
 By record ID:
@@ -385,6 +412,7 @@ The tool uses the following NocoDB Meta API v3 endpoints:
 - `GET /api/v3/meta/bases/{baseId}/fields/{fieldId}` - get field
 - `PATCH /api/v3/meta/bases/{baseId}/fields/{fieldId}` - update field
 - `DELETE /api/v3/meta/bases/{baseId}/fields/{fieldId}` - delete field
+- `POST /api/v2/meta/columns/{columnId}/primary` - set field as primary/display field
 
 ### Data
 - `GET /api/v3/data/{baseId}/{tableId}/records` - list records

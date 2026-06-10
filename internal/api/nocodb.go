@@ -470,6 +470,26 @@ func (c *Client) DeleteField(fieldID string) error {
 	return nil
 }
 
+// SetPrimaryField sets a field as the primary/display field for a table
+func (c *Client) SetPrimaryField(fieldID string) error {
+	resp, err := c.httpClient.R().
+		Post(fmt.Sprintf("%s/api/v2/meta/columns/%s/primary", c.baseURL, fieldID))
+
+	if err != nil {
+		return fmt.Errorf("failed to set primary field: %w", err)
+	}
+
+	if resp.IsError() {
+		var apiErr APIError
+		if err := json.Unmarshal(resp.Body(), &apiErr); err == nil {
+			return fmt.Errorf("API error: %s", apiErr.Message)
+		}
+		return fmt.Errorf("API error: status %d", resp.StatusCode())
+	}
+
+	return nil
+}
+
 // InsertRecord inserts a record into a table
 func (c *Client) InsertRecord(tableID string, record Record) (Record, error) {
 	var result struct {

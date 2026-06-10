@@ -37,6 +37,8 @@ func (e *Executor) ExecuteOperation(op *Operation) error {
 		return e.insertRow(op)
 	case "delete_row":
 		return e.deleteRow(op)
+	case "set_display_field":
+		return e.setDisplayField(op)
 	default:
 		return fmt.Errorf("unknown operation type: %s", op.Type)
 	}
@@ -297,4 +299,32 @@ func (e *Executor) deleteRow(op *Operation) error {
 	}
 
 	return fmt.Errorf("either record_id or where condition is required")
+}
+
+// setDisplayField sets a field as the display/primary field
+func (e *Executor) setDisplayField(op *Operation) error {
+	table, err := e.client.GetTableByName(op.Table)
+	if err != nil {
+		return fmt.Errorf("failed to get table: %w", err)
+	}
+
+	var fieldID string
+	if op.FieldID != "" {
+		fieldID = op.FieldID
+	} else if op.Column != nil && op.Column.Name != "" {
+		// Find field by name
+		for _, field := range table.Fields {
+			if field.Title == op.Column.Name {
+				fieldID = field.ID
+				break
+			}
+		}
+		if fieldID == "" {
+			return fmt.Errorf("field '%s' not found in table '%s'", op.Column.Name, op.Table)
+		}
+	} else {
+		return fmt.Errorf("field_id or column.name is required")
+	}
+
+	return e.client.SetPrimaryField(fieldID)
 }
