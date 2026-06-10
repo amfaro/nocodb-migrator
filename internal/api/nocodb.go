@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -46,6 +47,37 @@ type TableList struct {
 	List []Table `json:"list"`
 }
 
+// View represents a NocoDB view.
+type View struct {
+	ID        string      `json:"id"`
+	Title     string      `json:"title"`
+	ViewName  string      `json:"view_name"`
+	Type      string      `json:"type"`
+	ViewType  string      `json:"view_type"`
+	IsDefault bool        `json:"is_default"`
+	Fields    []ViewField `json:"fields,omitempty"`
+}
+
+// ViewList represents a list of NocoDB views.
+type ViewList struct {
+	List []View `json:"list"`
+}
+
+// ViewField represents view-specific column metadata.
+type ViewField struct {
+	ID         string   `json:"id"`
+	FieldID    string   `json:"field_id,omitempty"`
+	FKColumnID string   `json:"fk_column_id,omitempty"`
+	Order      *float64 `json:"order,omitempty"`
+}
+
+// ViewColumnUpdate represents a view-column update request.
+type ViewColumnUpdate struct {
+	Order      *float64 `json:"order,omitempty"`
+	FKColumnID string   `json:"fk_column_id,omitempty"`
+	FieldID    string   `json:"field_id,omitempty"`
+}
+
 // TableCreate represents a table creation request
 type TableCreate struct {
 	Title       string        `json:"title"`
@@ -80,7 +112,7 @@ type FieldCreate struct {
 	Unique       bool                   `json:"unique,omitempty"`
 	Description  string                 `json:"description,omitempty"`
 	Options      map[string]interface{} `json:"options,omitempty"`
-	Order        *int                   `json:"order,omitempty"`
+	Order        *float64               `json:"order,omitempty"`
 }
 
 // FieldUpdate represents a field update request
@@ -92,7 +124,7 @@ type FieldUpdate struct {
 	Unique       *bool                  `json:"unique,omitempty"`
 	Description  string                 `json:"description,omitempty"`
 	Options      map[string]interface{} `json:"options,omitempty"`
-	Order        *int                   `json:"order,omitempty"`
+	Order        *float64               `json:"order,omitempty"`
 }
 
 // Record represents a record in a table
@@ -174,6 +206,113 @@ func (c *Client) GetTableByName(tableName string) (*Table, error) {
 	}
 
 	return nil, fmt.Errorf("table '%s' not found", tableName)
+}
+
+// ListTableViews gets all views for a table.
+func (c *Client) ListTableViews(tableID string) (*ViewList, error) {
+	var result ViewList
+	resp, err := c.httpClient.R().
+		SetResult(&result).
+		Get(fmt.Sprintf("%s/api/v2/meta/tables/%s/views", c.baseURL, tableID))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to list table views: %w", err)
+	}
+
+	if resp.IsError() {
+		var apiErr APIError
+		if err := json.Unmarshal(resp.Body(), &apiErr); err == nil {
+			return nil, fmt.Errorf("API error: %s", apiErr.Message)
+		}
+		return nil, fmt.Errorf("API error: status %d", resp.StatusCode())
+	}
+
+	return &result, nil
+}
+
+// GetDefaultGridView gets the table's default grid view, falling back to the first grid view.
+func (c *Client) GetDefaultGridView(tableID string) (*View, error) {
+	views, err := c.ListTableViews(tableID)
+	if err != nil {
+		return nil, err
+	}
+
+	var firstGrid *View
+	for i := range views.List {
+		view := &views.List[i]
+		viewType := strings.ToLower(view.Type)
+		if viewType == "" {
+			viewType = strings.ToLower(view.ViewType)
+		}
+		if viewType != "grid" {
+			continue
+		}
+		if firstGrid == nil {
+			firstGrid = view
+		}
+		if view.IsDefault {
+			return view, nil
+		}
+	}
+	if firstGrid != nil {
+		return firstGrid, nil
+	}
+
+	return nil, fmt.Errorf("default grid view not found for table '%s'", tableID)
+}
+
+// ListViewColumns gets all view-column metadata for a view.
+func (c *Client) ListViewColumns(viewID string) ([]ViewField, error) {
+	var result struct {
+		List []ViewField `json:"list"`
+	}
+	resp, err := c.httpClient.R().
+		SetResult(&result).
+		Get(fmt.Sprintf("%s/api/v2/meta/views/%s/columns", c.baseURL, viewID))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to list view columns: %w", err)
+	}
+
+	if resp.IsError() {
+		var apiErr APIError
+		if err := json.Unmarshal(resp.Body(), &apiErr); err == nil {
+			return nil, fmt.Errorf("API error: %s", apiErr.Message)
+		}
+		return nil, fmt.Errorf("API error: status %d", resp.StatusCode())
+	}
+
+	if len(result.List) > 0 {
+		return result.List, nil
+	}
+
+	var direct []ViewField
+	if err := json.Unmarshal(resp.Body(), &direct); err == nil {
+		return direct, nil
+	}
+
+	return result.List, nil
+}
+
+// UpdateViewColumn updates view-specific column metadata.
+func (c *Client) UpdateViewColumn(viewID, viewColumnID string, req *ViewColumnUpdate) error {
+	resp, err := c.httpClient.R().
+		SetBody(req).
+		Patch(fmt.Sprintf("%s/api/v2/meta/views/%s/columns/%s", c.baseURL, viewID, viewColumnID))
+
+	if err != nil {
+		return fmt.Errorf("failed to update view column: %w", err)
+	}
+
+	if resp.IsError() {
+		var apiErr APIError
+		if err := json.Unmarshal(resp.Body(), &apiErr); err == nil {
+			return fmt.Errorf("API error: %s", apiErr.Message)
+		}
+		return fmt.Errorf("API error: status %d", resp.StatusCode())
+	}
+
+	return nil
 }
 
 // CreateTable creates a new table
