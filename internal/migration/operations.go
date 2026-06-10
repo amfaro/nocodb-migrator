@@ -205,8 +205,41 @@ func (e *Executor) alterField(op *Operation) error {
 		req.Unique = &op.Column.Unique
 	}
 
-	_, err = e.client.UpdateField(fieldID, req)
-	return err
+	if _, err = e.client.UpdateField(fieldID, req); err != nil {
+		return err
+	}
+
+	if op.Column != nil && op.Column.Order != nil {
+		if err := e.updateDefaultGridViewColumnOrder(table.ID, fieldID, *op.Column.Order); err != nil {
+			return fmt.Errorf("failed to update default grid view column order: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (e *Executor) updateDefaultGridViewColumnOrder(tableID, fieldID string, order float64) error {
+	view, err := e.client.GetDefaultGridView(tableID)
+	if err != nil {
+		return err
+	}
+
+	viewColumns, err := e.client.ListViewColumns(view.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, viewColumn := range viewColumns {
+		if viewColumn.FieldID == fieldID || viewColumn.FKColumnID == fieldID {
+			return e.client.UpdateViewColumn(view.ID, viewColumn.ID, &api.ViewColumnUpdate{
+				Order:      &order,
+				FKColumnID: viewColumn.FKColumnID,
+				FieldID:    viewColumn.FieldID,
+			})
+		}
+	}
+
+	return fmt.Errorf("view column for field '%s' not found in default grid view '%s'", fieldID, view.ID)
 }
 
 // dropField deletes a field

@@ -123,7 +123,7 @@ func TestValidateMigration(t *testing.T) {
 			name: "alter_field with order",
 			migration: &Migration{
 				Operations: []Operation{
-					{Type: "alter_field", Table: "T", Column: &ColumnDefinition{Name: "c", Type: "Number", Order: func() *int { v := 3; return &v }()}},
+					{Type: "alter_field", Table: "T", Column: &ColumnDefinition{Name: "c", Type: "Number", Order: func() *float64 { v := 3.0; return &v }()}},
 				},
 			},
 			wantError: false,

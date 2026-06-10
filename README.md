@@ -284,7 +284,7 @@ Or by field name:
 }
 ```
 
-Reordering an existing field:
+Reordering an existing field in the default grid view:
 
 ```json
 {
@@ -296,6 +296,8 @@ Reordering an existing field:
   }
 }
 ```
+
+When `alter_field.column.order` is set, the migrator updates both field metadata and the default grid-view column metadata so the NocoDB table UI shows the requested order.
 
 #### Deleting a Field
 
