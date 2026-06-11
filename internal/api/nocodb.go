@@ -50,6 +50,39 @@ type TableList struct {
 // ViewKind represents a NocoDB view type.
 type ViewKind string
 
+// Boolish accepts boolean API fields encoded as bool, number, or string.
+type Boolish bool
+
+// UnmarshalJSON accepts native booleans plus legacy numeric/string flags.
+func (b *Boolish) UnmarshalJSON(data []byte) error {
+	var value bool
+	if err := json.Unmarshal(data, &value); err == nil {
+		*b = Boolish(value)
+		return nil
+	}
+
+	var numeric float64
+	if err := json.Unmarshal(data, &numeric); err == nil {
+		*b = numeric != 0
+		return nil
+	}
+
+	var text string
+	if err := json.Unmarshal(data, &text); err != nil {
+		return err
+	}
+
+	switch strings.ToLower(strings.TrimSpace(text)) {
+	case "true", "1", "yes":
+		*b = true
+	case "false", "0", "no", "":
+		*b = false
+	default:
+		return fmt.Errorf("invalid boolean value %q", text)
+	}
+	return nil
+}
+
 const viewKindGrid ViewKind = "grid"
 
 // UnmarshalJSON accepts both v2 numeric ViewTypes and string aliases.
@@ -95,7 +128,7 @@ type View struct {
 	ViewName  string      `json:"view_name"`
 	Type      ViewKind    `json:"type"`
 	ViewType  string      `json:"view_type"`
-	IsDefault bool        `json:"is_default"`
+	IsDefault Boolish     `json:"is_default"`
 	Fields    []ViewField `json:"fields,omitempty"`
 }
 
@@ -291,7 +324,7 @@ func (c *Client) GetDefaultGridView(tableID string) (*View, error) {
 		if firstGrid == nil {
 			firstGrid = view
 		}
-		if view.IsDefault {
+		if bool(view.IsDefault) {
 			return view, nil
 		}
 	}
