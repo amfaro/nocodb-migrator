@@ -44,7 +44,7 @@ func TestAlterFieldOrderUpdatesDefaultGridViewColumn(t *testing.T) {
 			if r.Method != http.MethodGet {
 				t.Fatalf("unexpected method for list views: %s", r.Method)
 			}
-			_, _ = w.Write([]byte(`{"list":[{"id":"view1","title":"Grid view","type":"grid","is_default":true}]}`))
+			_, _ = w.Write([]byte(`{"list":[{"id":"view1","title":"Grid view","type":3,"is_default":true}]}`))
 		case "/api/v2/meta/views/view1/columns":
 			if r.Method != http.MethodGet {
 				t.Fatalf("unexpected method for list view columns: %s", r.Method)

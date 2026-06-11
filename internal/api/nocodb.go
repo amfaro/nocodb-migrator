@@ -47,12 +47,53 @@ type TableList struct {
 	List []Table `json:"list"`
 }
 
+// ViewKind represents a NocoDB view type.
+type ViewKind string
+
+const viewKindGrid ViewKind = "grid"
+
+// UnmarshalJSON accepts both v2 numeric ViewTypes and string aliases.
+func (v *ViewKind) UnmarshalJSON(data []byte) error {
+	var alias string
+	if err := json.Unmarshal(data, &alias); err == nil {
+		*v = ViewKind(strings.ToLower(alias))
+		return nil
+	}
+
+	var numeric int
+	if err := json.Unmarshal(data, &numeric); err != nil {
+		return err
+	}
+
+	switch numeric {
+	case 1:
+		*v = "form"
+	case 2:
+		*v = "gallery"
+	case 3:
+		*v = viewKindGrid
+	case 4:
+		*v = "kanban"
+	case 5:
+		*v = "map"
+	case 6:
+		*v = "calendar"
+	case 7:
+		*v = "list"
+	case 8:
+		*v = "timeline"
+	default:
+		*v = ViewKind(strconv.Itoa(numeric))
+	}
+	return nil
+}
+
 // View represents a NocoDB view.
 type View struct {
 	ID        string      `json:"id"`
 	Title     string      `json:"title"`
 	ViewName  string      `json:"view_name"`
-	Type      string      `json:"type"`
+	Type      ViewKind    `json:"type"`
 	ViewType  string      `json:"view_type"`
 	IsDefault bool        `json:"is_default"`
 	Fields    []ViewField `json:"fields,omitempty"`
@@ -240,11 +281,11 @@ func (c *Client) GetDefaultGridView(tableID string) (*View, error) {
 	var firstGrid *View
 	for i := range views.List {
 		view := &views.List[i]
-		viewType := strings.ToLower(view.Type)
+		viewType := string(view.Type)
 		if viewType == "" {
 			viewType = strings.ToLower(view.ViewType)
 		}
-		if viewType != "grid" {
+		if ViewKind(viewType) != viewKindGrid {
 			continue
 		}
 		if firstGrid == nil {
